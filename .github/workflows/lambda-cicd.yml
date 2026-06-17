@@ -29,6 +29,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Show Changed Files
+        run: |
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }}
+
       - name: Detect Changed Paths
         id: filter
         uses: dorny/paths-filter@v3
