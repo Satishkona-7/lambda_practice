@@ -19,8 +19,8 @@ def lambda_handler(event, context):
         "body": json.dumps({
             "app": config["APP_NAME"],
             "message": config["MESSAGE"],
-            "current_time": datetime.utcnow().isoformat()
+            "current_time": datetime.utcnow().isoformat(),
             "environment": "dev",
-            "version": "2.0"
+            "version": "2.1"
         })
     }
