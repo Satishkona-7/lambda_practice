@@ -1,0 +1,230 @@
+name: Lambda CI/CD
+
+on:
+  push:
+    branches:
+      - Dev
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+
+jobs:
+
+  detect-changes:
+    runs-on: ubuntu-latest
+
+    outputs:
+      lambda1: ${{ steps.filter.outputs.lambda1 }}
+      lambda2: ${{ steps.filter.outputs.lambda2 }}
+      lambda3: ${{ steps.filter.outputs.lambda3 }}
+      lambda4: ${{ steps.filter.outputs.lambda4 }}
+      common: ${{ steps.filter.outputs.common }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect Changed Paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            common:
+              - 'common/**'
+
+            lambda1:
+              - 'lambda1/**'
+
+            lambda2:
+              - 'lambda2/**'
+
+            lambda3:
+              - 'lambda3/**'
+
+            lambda4:
+              - 'lambda4/**'
+
+  deploy-lambda1:
+    needs: detect-changes
+
+    if: |
+      needs.detect-changes.outputs.lambda1 == 'true' ||
+      needs.detect-changes.outputs.common == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login To ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --provenance=false \
+            -t lambda1 \
+            -f lambda1/Dockerfile .
+
+      - name: Tag Image
+        run: |
+          docker tag lambda1:latest \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda1-repo:${{ github.sha }}
+
+      - name: Push Image
+        run: |
+          docker push \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda1-repo:${{ github.sha }}
+
+      - name: Update Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name lambda1 \
+            --image-uri $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda1-repo:${{ github.sha }}
+
+  deploy-lambda2:
+    needs: detect-changes
+
+    if: |
+      needs.detect-changes.outputs.lambda2 == 'true' ||
+      needs.detect-changes.outputs.common == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login To ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --provenance=false \
+            -t lambda2 \
+            -f lambda2/Dockerfile .
+
+      - name: Tag Image
+        run: |
+          docker tag lambda2:latest \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda2-repo:${{ github.sha }}
+
+      - name: Push Image
+        run: |
+          docker push \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda2-repo:${{ github.sha }}
+
+      - name: Update Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name lambda2 \
+            --image-uri $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda2-repo:${{ github.sha }}
+
+  deploy-lambda3:
+    needs: detect-changes
+
+    if: |
+      needs.detect-changes.outputs.lambda3 == 'true' ||
+      needs.detect-changes.outputs.common == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login To ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --provenance=false \
+            -t lambda3 \
+            -f lambda3/Dockerfile .
+
+      - name: Tag Image
+        run: |
+          docker tag lambda3:latest \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda3-repo:${{ github.sha }}
+
+      - name: Push Image
+        run: |
+          docker push \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda3-repo:${{ github.sha }}
+
+      - name: Update Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name lambda3 \
+            --image-uri $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda3-repo:${{ github.sha }}
+
+  deploy-lambda4:
+    needs: detect-changes
+
+    if: |
+      needs.detect-changes.outputs.lambda4 == 'true' ||
+      needs.detect-changes.outputs.common == 'true'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login To ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --provenance=false \
+            -t lambda4 \
+            -f lambda4/Dockerfile .
+
+      - name: Tag Image
+        run: |
+          docker tag lambda4:latest \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda4-repo:${{ github.sha }}
+
+      - name: Push Image
+        run: |
+          docker push \
+          $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda4-repo:${{ github.sha }}
+
+      - name: Update Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name lambda4 \
+            --image-uri $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/lambda4-repo:${{ github.sha }}
