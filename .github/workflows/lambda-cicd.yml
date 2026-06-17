@@ -19,39 +19,48 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      lambda1: ${{ steps.filter.outputs.lambda1 }}
-      lambda2: ${{ steps.filter.outputs.lambda2 }}
-      lambda3: ${{ steps.filter.outputs.lambda3 }}
-      lambda4: ${{ steps.filter.outputs.lambda4 }}
-      common: ${{ steps.filter.outputs.common }}
+        lambda1: ${{ steps.filter.outputs.lambda1 }}
+        lambda2: ${{ steps.filter.outputs.lambda2 }}
+        lambda3: ${{ steps.filter.outputs.lambda3 }}
+        lambda4: ${{ steps.filter.outputs.lambda4 }}
+        common: ${{ steps.filter.outputs.common }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Show Changed Files
-        run: |
-          git diff --name-only ${{ github.event.before }} ${{ github.sha }}
+        with:
+            fetch-depth: 0
 
       - name: Detect Changed Paths
         id: filter
         uses: dorny/paths-filter@v3
         with:
-          filters: |
-            common:
-              - 'common/**'
+            base: ${{ github.event.before }}
+            ref: ${{ github.sha }}
 
-            lambda1:
-              - 'lambda1/**'
+            filters: |
+              common:
+                - 'common/**'
 
-            lambda2:
-              - 'lambda2/**'
+              lambda1:
+                - 'lambda1/**'
 
-            lambda3:
-              - 'lambda3/**'
+              lambda2:
+                - 'lambda2/**'
 
-            lambda4:
-              - 'lambda4/**'
+              lambda3:
+                - 'lambda3/**'
+
+              lambda4:
+                - 'lambda4/**'
+
+      - name: Print Results
+        run: |
+            echo "common=${{ steps.filter.outputs.common }}"
+            echo "lambda1=${{ steps.filter.outputs.lambda1 }}"
+            echo "lambda2=${{ steps.filter.outputs.lambda2 }}"
+            echo "lambda3=${{ steps.filter.outputs.lambda3 }}"
+            echo "lambda4=${{ steps.filter.outputs.lambda4 }}"
 
   deploy-lambda1:
     needs: detect-changes
